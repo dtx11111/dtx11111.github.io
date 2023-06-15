@@ -8,6 +8,7 @@
   
   
   <title>
+    Spark（HA）配置文档 |
     
     dtx
   </title>
@@ -31,16 +32,27 @@
 <body>
   <main class="content">
     <section class="outer">
-  <article id="post-Spark(Yarn)" class="article article-type-post" itemscope
+  <article id="post-Spark(HA)" class="article article-type-post" itemscope
   itemprop="blogPost" data-scroll-reveal>
 
   <div class="article-inner">
     
+    <header class="article-header">
+      
+  
+  <h1 class="article-title" itemprop="name">
+    Spark（HA）配置文档
+  </h1>
+  
+  
+
+    </header>
+    
 
     
     <div class="article-meta">
-      <a href="/2023/06/15/Spark(Yarn)/" class="article-date">
-  <time datetime="2023-06-15T02:03:31.808Z" itemprop="datePublished">2023-06-15</time>
+      <a href="/2023/06/09/Spark(HA)/" class="article-date">
+  <time datetime="2023-06-09T03:25:46.000Z" itemprop="datePublished">2023-06-09</time>
 </a>
       
     </div>
@@ -56,23 +68,28 @@
       
       
       
-        <h1 id="Spark（Yarn）"><a href="#Spark（Yarn）" class="headerlink" title="Spark（Yarn）"></a>Spark（Yarn）</h1><h2 id="Spark-On-YARN-环境搭建"><a href="#Spark-On-YARN-环境搭建" class="headerlink" title="Spark On YARN 环境搭建"></a>Spark On YARN 环境搭建</h2><p>确保<code>HADOOP_CONF_DIR</code>和<code>YARN_CONF_DIR</code>的环境变量正确</p>
-<p><img src="/../image_7/1.png"></p>
-<p>启动HDFS集群，zookeeper和StandAlone集群，并且启动历史服务器</p>
-<p><img src="/../image_7/2.png"></p>
-<p>利用<code>bin/pyspark --master yarn --deploy-mode client</code>将spark连接到YARN集群的客户端模式下</p>
-<p><img src="/../image_7/3.png"></p>
-<p><img src="/../image_7/4.png"></p>
+        <h1 id="Spark（HA）"><a href="#Spark（HA）" class="headerlink" title="Spark（HA）"></a>Spark（HA）</h1><h2 id="Spark-StandAlone-HA-环境搭建"><a href="#Spark-StandAlone-HA-环境搭建" class="headerlink" title="Spark StandAlone HA 环境搭建"></a>Spark StandAlone HA 环境搭建</h2><p>启动Zookeeper服务和HDFS集群</p>
+<p><img src="/../image_6/1.png"></p>
+<p><code>cd /export/server/spark/conf </code>中<code>vi spark-env.sh </code>将其中的<code>SPARK_MASTER_HOST=node1</code>删除，并增加如下信息，以达到可以用到zookeeper的动态切换master功能</p>
+<p><img src="/../image_6/2.png"></p>
+<p>通过命令<code>scp spark-env.sh node2:/export/server/spark/conf/</code></p>
+<p><code>scp spark-env.sh node3:/export/server/spark/conf/</code>将<code>spark-env.sh</code>分发到node2和node3上，且若是StandAlone集群是启动中的话，通过<code>sbin/stop-all.sh</code>命令将StandAlone集群停止</p>
+<p>在node1上启动一个master进程和全部的worker进程</p>
+<p><img src="/../image_6/3.png"></p>
+<p><img src="/../image_6/4.png"></p>
+<p>在node2上启动一个备用的master进程</p>
+<p><img src="/../image_6/5.png"></p>
+<p><img src="/../image_6/6.png"></p>
+<p>使用<code>bin/spark-submit --master spark://node1:7077 /export/server/spark/examples/src/main/python/pi.py 1000</code>命令提交一个spark任务到正在运行的master上，在完成提交后使用命令kill掉node1上的master进程，并等待node2上的备用的master进程来接收并完成这个spark任务。</p>
+<p><img src="/../image_6/7.png"></p>
+<p><img src="/../image_6/8.png"></p>
 <p>测试</p>
-<p><img src="/../image_7/5.png"></p>
-<p>查看历史服务器</p>
-<p><img src="/../image_7/6.png"></p>
-<p><img src="/../image_7/7.png"></p>
+<p><img src="/../image_6/9.png"></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2023/06/15/Spark(Yarn)/" data-id="cliwih5hu00049o3w13pp4jcp" class="article-share-link">
+      <a data-url="http://example.com/2023/06/09/Spark(HA)/" data-id="cliwitok90002183wfwiwg3c4" class="article-share-link">
         Share
       </a>
       
@@ -84,10 +101,19 @@
   
 <nav class="article-nav">
   
+  <a href="/2023/06/09/Spark(Yarn)/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Spark（Yarn）配置文档
+      
+    </div>
+  </a>
   
-  <a href="/2023/06/15/Spark(stand-alone)/" class="article-nav-link">
+  
+  <a href="/2023/06/09/Spark(stand-alone)/" class="article-nav-link">
     <strong class="article-nav-caption">Older</strong>
-    <div class="article-nav-title"></div>
+    <div class="article-nav-title">Spark（stand-alone）配置文档</div>
   </a>
   
 </nav>
